@@ -39,3 +39,7 @@ __pycache__/
 
 # Recovery key artifacts (temporary during creation)
 recovery-mount-*
+
+# Backup and archive files
+*.backup
+*.tar.gz
