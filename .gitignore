@@ -1,0 +1,14 @@
+# Logs
+logs/
+
+# Config backups
+config-backup-*.tar.gz
+
+# VirusTotal API key
+config/vt-api.conf
+vt-upload-quota
+
+# OS files
+.DS_Store
+*.swp
+*~

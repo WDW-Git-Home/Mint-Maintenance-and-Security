@@ -1,0 +1,312 @@
+.TH MAINTAIN-V7.SH 8 "August 2026" "v7.7" "System Administration"
+.SH NAME
+maintain-v7.sh \- modular system maintenance, security hardening, and vulnerability scanning utility for Debian/Ubuntu-based Linux
+
+.SH SYNOPSIS
+.B ./maintain-v7.sh
+.RB [ OPTIONS ]
+
+.SH DESCRIPTION
+.PP
+.B maintain-v7.sh
+is a monolithic Bash script providing a menu-driven interface for system maintenance tasks including antivirus scanning, rootkit detection, file integrity monitoring, kernel hardening, vulnerability assessment, and automated recovery.
+
+.PP
+The script requires root privileges for most operations and is designed for Debian-based distributions (Linux Mint 22.3 tested).
+
+.SH OPTIONS
+.TP
+.B --setup
+Run initial setup only (bootstrap all tools). Installs clamav, rkhunter, chkrootkit, aide, lynis, fail2ban, tmpreaper; initializes AIDE baseline; creates drop-in config files.
+
+.PP
+(Interactive mode is default — no additional arguments required.)
+
+.SH INTERACTIVE MENU OPTIONS
+.TP
+.B 1
+Initial Setup & Configuration Bootstrap
+.TP
+.B 2
+View README (Installation & Config Guide)
+.TP
+.B 3
+System Update & Upgrade (apt update + full-upgrade)
+.TP
+.B 4
+System Cleanup (autoclean, autoremove, journal vacuum)
+.TP
+.B 5
+Clear Temp Files (protects FUSE mounts)
+.TP
+.B 6
+Antivirus Scan & VirusTotal submenu (6a-6i)
+.TP
+.B 7
+Rootkit Detection submenu (7a-7c)
+.TP
+.B 8
+File Integrity Check (AIDE)
+.TP
+.B 9
+Quick Hardening (Lynis recommendations, +10-15 pts)
+.TP
+.B 10
+Password Policy & PAM (+2-3 pts)
+.TP
+.B 11
+Enable Audit Logging (auditd, +2-3 pts)
+.TP
+.B 17
+GRUB Bootloader Password Protection (+1 pt)
+.TP
+.B 18
+Advanced Sysctl Hardening (VM-Compatible, +2-3 pts)
+.TP
+.B 19
+Auditd Rules Configuration (+1 pt)
+.TP
+.B 20
+Process Accounting (sysstat, +1 pt)
+.TP
+.B 21
+Disable Unused Protocols (dccp, sctp, rds, tipc, +1 pt)
+.TP
+.B 22
+Vulnerability Scanner submenu (22a-22e)
+.TP
+.B 23
+Performance Gear Shift (launches perf-tune.sh)
+.TP
+.B 12
+Security Audit (Lynis with score extraction)
+.TP
+.B 13
+Fail2Ban Status
+.TP
+.B 14
+Revert All Hardening Changes
+.TP
+.B 15
+Run All Maintenance (weekly automation)
+.TP
+.B 16
+Export Configuration Backup (tarball)
+.TP
+.B 98
+Create Live Recovery Key (bootable USB)
+.TP
+.B 99
+Exit
+
+.SH ENVIRONMENT
+.TP
+.B VT_API_KEY
+VirusTotal API key (optional if stored in config file at ~/.config/maintain/vt-api.conf).
+.TP
+.B CONFIG_DIR
+Default: ~/.config/maintain. Stores VT API key, VT upload quota tracking.
+
+.SH CONFIGURATION FILES
+.TP
+.I /etc/rkhunter.conf.d/local.conf
+rkhunter whitelists
+.TP
+.I /etc/fail2ban/jail.local
+SSH brute-force protection
+.TP
+.I /etc/aide/aide.conf
+File integrity rules
+.TP
+.I /var/lib/aide/aide.db
+AIDE baseline database
+.TP
+.I /etc/sysctl.d/99-desktop-hardening.conf
+Basic kernel hardening
+.TP
+.I /etc/sysctl.d/99-lumo-hardening.conf
+Advanced manual hardening
+.TP
+.I /etc/sysctl.d/99-lumo-advanced-hardening.conf
+VM-compatible hardening
+.TP
+.I /etc/login.defs
+UMASK, password aging
+.TP
+.I /etc/pam.d/common-password
+PAM password quality
+.TP
+.I /etc/issue
+Login banner
+.TP
+.I /etc/issue.net
+Network login banner
+.TP
+.I /etc/grub.d/40_custom_grubauth
+GRUB bootloader password
+.TP
+.I /etc/audit/rules.d/hardening.rules
+Audit monitoring rules
+.TP
+.I /etc/modprobe.d/disable-unused.conf
+Disabled network protocols
+.TP
+.I ~/.config/maintain/vt-api.conf
+VirusTotal API key (0600)
+
+.SH EXIT STATUS
+.TP
+.B 0
+Success
+.TP
+.B 1
+General error (missing dependency, permission denied)
+.TP
+.B 2
+Invalid argument or unknown menu option
+.TP
+.B 3
+Dependency check failed (required tool not installed)
+.TP
+.B 4
+Operation cancelled by user
+
+.SH DEPENDENCIES
+Required packages (installed by Option 1):
+.RS
+.IP \(bu 2
+clamav clamav-daemon — Antivirus engine
+.IP \(bu 2
+rkhunter — Rootkit Hunter
+.IP \(bu 2
+chkrootkit — Second-generation rootkit scanner
+.IP \(bu 2
+aide — File integrity monitoring
+.IP \(bu 2
+lynis — Security auditing tool
+.IP \(bu 2
+fail2ban — Brute-force protection
+.IP \(bu 2
+tmpreaper — Temporary file cleanup
+.IP \(bu 2
+jq — JSON processing (VirusTotal integration)
+.IP \(bu 2
+ubuntu-advantage-tools — Security update checking (apt-check)
+.RE
+
+Optional packages:
+.RS
+.IP \(bu 2
+perf-tune.sh — Performance tuning utility (must be copied to same directory for Option 23)
+.RE
+
+.SH FILES GENERATED
+.TP
+.I ./logs/*.log
+Timestamped operation logs
+.TP
+.I ./config-backup-*.tar.gz
+Configuration export backups
+.TP
+.I ~/.config/maintain/vt-api.conf
+VirusTotal API key storage
+
+.SH TYPICAL WORKFLOW
+
+.SS First-time Setup
+.EX
+$ ./maintain-v7.sh --setup
+# Installs all tools, initializes AIDE baseline, configures Fail2Ban
+.EE
+
+.SS Weekly Maintenance
+.EX
+$ ./maintain-v7.sh
+# Select Options 3, 4, 5, 6b, 7a in sequence
+# OR use Option 15 (Run All Maintenance)
+.EE
+
+.SS Monthly Security Audit
+.EX
+$ ./maintain-v7.sh → Option 12 (Lynis)
+# Review hardening index and warnings
+.EE
+
+.SS As-Needed Hardening
+.EX
+$ ./maintain-v7.sh → Options 9-11, 17-21
+# Apply individual hardening measures
+.EE
+
+.SS Emergency Recovery
+.EX
+# Boot from USB Recovery Key (created via Option 98)
+# Run recover.sh to restore configs or remove hardening
+.EE
+
+.SH SAFETY NOTES
+
+.SS AIDE Initialization
+First-run AIDE baseline creation may take 3-10 minutes. Network mounts are excluded to prevent hangs.
+
+.SS VirusTotal Free Tier Limits
+.RS
+.IP \(bu 2
+4 file submissions per day (public uploads)
+.IP \(bu 2
+~4 hash queries per minute
+.IP \(bu 2
+15-second delay between requests enforced
+.RE
+
+.SS GRUB Password
+Once set, cannot be removed without:
+.RS
+.IP \(bu 2
+Option 14 (Revert Hardening) from working system
+.IP \(bu 2
+Boot from USB Recovery Key and run recover.sh
+.RE
+
+.SS AIDE Exclusions (Prevents False Positives)
+.RS
+.IP \(bu 2
+/tmp/.mount_* (AppImage/FUSE mounts)
+.IP \(bu 2
+/var/log, /run, /dev, /proc, /sys
+.IP \(bu 2
+Network mounts (/mnt, /media)
+.RE
+
+.SH KNOWN ISSUES
+
+.SS debsecan Suite Mismatch
+Linux Mint codenames (e.g., "zena") are not recognized by Debian security tracker. Script automatically maps Mint 22.x → Ubuntu "noble" for compatibility.
+
+.SS AIDE Permission Denied on Ephemeral Mounts
+GUI applications (Joplin AppImage, etc.) create /tmp/.mount_* paths that AIDE cannot traverse. Already excluded in default config.
+
+.SS VirusTotal API Key Persistence Under sudo
+Script resolves home directory correctly when called via sudo using SUDO_USER environment variable.
+
+.SH SEE ALSO
+.BR clamscan (1),
+.BR aide (1),
+.BR auditctl (8),
+.BR rkhunter (1),
+.BR chkrootkit (1),
+.BR lynis (1),
+.BR fail2ban-client (1),
+.BR freshclam (1),
+.BR sysctl (8),
+.BR mkpasswd (1),
+.BR grub-mkpasswd-pbkdf2 (8)
+
+.SH BUGS
+Report issues to the maintainer. Known issues tracked in script comments. For Mint Zena debsecan suite mismatch, manual override required (see TROUBLESHOOTING.md).
+
+.SH AUTHOR
+Dave Wells — St. Louis, MO, July 2026
+
+.SH LICENSE
+Free software under GPL. NO WARRANTY. Use at your own risk.
