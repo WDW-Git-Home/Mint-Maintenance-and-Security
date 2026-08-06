@@ -17,3 +17,15 @@ Thumbs.db
 # Temp files
 .tmp/
 *.tmp
+
+# SSH keys — NEVER commit
+git-key
+git-key.pub
+
+# Editor temp files
+*~
+*.backup
+*.swp
+
+# Compressed artifacts
+perf-tune.sh.tar.gz
